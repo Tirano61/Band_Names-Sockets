@@ -1,10 +1,8 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
-enum ServerStatus{
-  OnLine,
+enum ServerStatus {
+  Online,
   OffLine,
   Connecting
 }
@@ -14,47 +12,39 @@ class SocketService with ChangeNotifier{
   ServerStatus _serverStatus = ServerStatus.Connecting;
   IO.Socket _socket;
 
-  get serverStatus => this._serverStatus;
+  ServerStatus get serverStatus => this._serverStatus;
+  IO.Socket get socket => this._socket;
 
   SocketService(){
     this._initConfig();
   }
 
-  IO.Socket get socket => this._socket;
-
   void _initConfig(){
-
-    // Dart client
-    this._socket = IO.io('http://10.0.2.2:3000', <String, dynamic>{
-    'transports': ['websocket'],
-    'autoConnect': true
-    // optional
-  });
  
+    _socket = IO.io('http://192.168.0.143:3000',<String, dynamic> {
+      'transports': ['websocket'],
+      'extraHeaders': {'foo': 'bar'},
+      'autoConnect': true,
+      'path': "/socket.io/socket.io"
+    });
 
-    // this._socket = IO.io('http://192.168.0.143:3000',{
-    //   'transports': ['websocket'],
-    //   'autoConnect': true
-    // });
-    this._socket.on('connect', (_) {
-     print('connect flutter');
-     this._serverStatus = ServerStatus.OnLine;
+    _socket.on('connect', (_) {
+     print('connect');
+     this._serverStatus = ServerStatus.Online;
      notifyListeners();
-     
     });
     
-    this._socket.on('disconnect', (_){
+    _socket.on('disconnect', (_){ 
       print('disconnect');
       this._serverStatus = ServerStatus.OffLine;
       notifyListeners();
-    });
-    
+     });
+
+    //  _socket.on('nuevo-mensaje', (payload){
+    //    print('nuevo-mensaje:');
+    //    print('Nombre : '+ payload['nombre']);
+    //    print('Mensaje : '+ payload['mensaje']);
+
+    //  });
   }
-
-
-
-
-
-
-
 }
